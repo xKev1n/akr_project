@@ -58,9 +58,17 @@ def VerifySignature(msg, signature, e, n):
 				print(signature_in_file)
 				print(signature)
 				if signature_in_file == signature:
-					data_in = data_in.replace(data_in[data_in.find('b\"\\\\u2557b') : ], "")
-					print(data_in)
-					hash = str(sha512(data_in.encode('unicode-escape')).hexdigest())
+					full_data = data_in
+					data_in = data_in.replace(data_in[data_in.find('b\"\\\\u2557b') : ], "")		#Hashes not match for some reason...
+					
+					with open(file_name, "w") as f:
+						f.write(data_in)
+					with open(file_name, "rb") as f:
+						data_in = f.read()
+					with open(file_name, "w") as f:
+						f.write(full_data)					#The problem is that for some reason the hash calculated is different with bytes input and with encoded string.
+
+					hash = str(sha512(data_in).hexdigest())
 					dec_hash = int(hash, 16)
 				else:
 					print("Signature in file doesn't match signature given by argument.")
