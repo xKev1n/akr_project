@@ -1,4 +1,4 @@
-from functions import GenerateKeyPair, VerifyCertificate, formatTime, VerifySignature
+from functions import VerifyCertificate, VerifySignature
 from entity import Entity
 from authority import Authority
 
