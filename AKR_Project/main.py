@@ -51,7 +51,9 @@ with open("text_altered.txt", "r") as f_altered:
 print("Signature into metadata for PDF:")
 sig = entity1.GenerateSignature('doc.pdf', entity1.keyPair.d, entity1.keyPair.n)
 VerifySignature('doc.pdf', sig, entity1.keyPair.e, entity1.keyPair.n)
-
-print("Signature into metadata for TXT:")
-txt_signature = entity1.GenerateSignature("signed_text.txt",entity1.keyPair.d, entity1.keyPair.n)
-VerifySignature("signed_text.txt", txt_signature, entity1.keyPair.e, entity1.keyPair.n)
+i = 0
+while i<5:
+	print("Signature into metadata for TXT:")
+	txt_signature = entity1.GenerateSignature("signed_text.txt",entity1.keyPair.d, entity1.keyPair.n)
+	VerifySignature("signed_text.txt", txt_signature, entity1.keyPair.e, entity1.keyPair.n)
+	i += 1

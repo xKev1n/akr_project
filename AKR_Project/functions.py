@@ -99,7 +99,8 @@ def VerifySignature(msg, signature, e, n):
 	else:
 		dec_hash = int.from_bytes(sha512(bytes(msg)).digest(), byteorder='big')
 	
-	hashFromSignature = pow(int(signature, 16), e, n)
+
+	hashFromSignature = pow(int(signature, 16), e, n)					#PKs are different for every rerun. 
 	print("Hash received: {0}\nHash calculated: {1}\nHashes match: {2}\n".format(hex(dec_hash), hex(hashFromSignature), dec_hash == hashFromSignature))
 		
 	if dec_hash == hashFromSignature:
