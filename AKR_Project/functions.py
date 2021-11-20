@@ -64,9 +64,6 @@ def VerifySignature(msg, signature, e, n):
 				signature_in_file = find_sig_in_file(data_in)
 
 				if signature_in_file != None:
-					
-					print(signature)
-					print(signature_in_file)
 
 					if signature_in_file == signature:
 						full_data = data_in
