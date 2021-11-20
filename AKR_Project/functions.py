@@ -35,6 +35,18 @@ def VerifyCertificate(certificate, entity):
 	else:
 		print("Entity {0} doesn't have any certificates".format(entity.name))
 
+def find_sig_in_file(data):
+	if data.find('\\u2557') != -1 or data.find('\\u255d') != -1:
+		start_index = data.find("/Signature:") + 12
+
+		end_index = data.find("/ModDate")
+
+		signature_in_file = data[start_index : end_index]
+
+		return signature_in_file
+	else:
+		return None
+
 def VerifySignature(msg, signature, e, n):
 	# RSA verification of the signature
 	# User will send Public Key to Authority to verify it
@@ -48,30 +60,34 @@ def VerifySignature(msg, signature, e, n):
 		if type_of_file == ".txt":
 			with open(file_name, "r") as fi:
 				data_in = fi.read()
+				
+				signature_in_file = find_sig_in_file(data_in)
 
-
-				start_index = data_in.find("/Signature:") + 12
-
-				end_index = data_in.find("/ModDate")
-
-				signature_in_file = data_in[start_index : end_index]
-				print(signature_in_file)
-				print(signature)
-				if signature_in_file == signature:
-					full_data = data_in
-					data_in = data_in.replace(data_in[data_in.find('b\"\\\\u2557b') : ], "")		#Hashes not match for some reason...
+				if signature_in_file != None:
 					
-					with open(file_name, "w") as f:
-						f.write(data_in)
-					with open(file_name, "rb") as f:
-						data_in = f.read()
-					with open(file_name, "w") as f:
-						f.write(full_data)					#The problem is that for some reason the hash calculated is different with bytes input and with encoded string.
+					print(signature)
+					print(signature_in_file)
 
-					hash = str(sha512(data_in).hexdigest())
-					dec_hash = int(hash, 16)
+					if signature_in_file == signature:
+						full_data = data_in
+						data_in = data_in.replace(data_in[data_in.find('b\"\\\\u2557b') : ], "")		#Hashes not match for some reason...
+
+						
+						with open(file_name, "w") as f:
+							f.write(data_in)
+						with open(file_name, "rb") as f:
+							data_in = f.read()
+						with open(file_name, "w") as f:
+							f.write(full_data)					
+
+						hash = str(sha512(data_in).hexdigest())
+						#print(data_in)
+						dec_hash = int(hash, 16)						#Is same only for first cycle. Hashes don't match on signed documents.
+					else:
+						print("Signature in file doesn't match signature given by argument.")
+						return False
 				else:
-					print("Signature in file doesn't match signature given by argument.")
+					print("There is no signature in file, thus the verification process failed.")
 					return False
 		else:
 			fi = open(file_name, "rb")

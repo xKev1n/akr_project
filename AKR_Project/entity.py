@@ -1,4 +1,4 @@
-from functions import GenerateKeyPair, formatTime
+from functions import GenerateKeyPair, formatTime, find_sig_in_file
 import time
 from hashlib import sha512
 from PyPDF2 import PdfFileReader, PdfFileMerger
@@ -54,6 +54,7 @@ class Entity():
 
 			fi = open(file_name, "rb")
 			data_in = fi.read()
+
 			hash = str(sha512(data_in).hexdigest())
 			dec_hash = int(hash, 16)
 			fi.close()
@@ -119,7 +120,7 @@ class Entity():
 		elif type_of_file == '.txt':
 			with open(file_name, 'r') as f:
 				content = f.read()
-				if content.find('\\u2557') == -1 or content.find('\\u255d') == -1:
+				if find_sig_in_file(content) == None:
 					data = ""
 					if self.EntityHasCertificate() == True:
 						data += '/Certificate: '+self.PrintCertificate()
@@ -135,7 +136,7 @@ class Entity():
 					return str(hex(signature))
 				else:
 					print ("File has already been signed")
-					return str(hex(signature))
+					return str(find_sig_in_file(content))
 					#TODO: Implement functionality of either replacing old signature or alter verification mechanism to handle null passing.
 		else:
 			return str(hex(signature))
