@@ -7,15 +7,11 @@ import textract														# pip install textract
 
 class Entity():
 	def __init__(self, name):
-		self.keyPair = GenerateKeyPair()
 		self.name = name
+		self.keyPair = GenerateKeyPair(self.name)
 		self.certificate = None
 		self.message = None
 
-	def ShowKeys(self):
-		print(f"Public key:  (e={hex(self.keyPair.e)})")
-		print(f"Private key: (d={hex(self.keyPair.d)})")
-		print(f"Modulo: (n={hex(self.keyPair.n)})")
 
 	def EntityHasCertificate(self):
 		if self.certificate != None:

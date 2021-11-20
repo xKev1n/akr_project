@@ -3,14 +3,21 @@ from hashlib import sha512
 from PyPDF2 import PdfFileReader
 import time
 import textract
+from collections import namedtuple
 
 
 # Functions
-def GenerateKeyPair():
+def GenerateKeyPair(name):
 	# function to generate a pair of public key, private key and modulo
 	keyPair = RSA.generate(bits=1024)
+	save_keypair_to_file(name, keyPair)
 	return keyPair
 
+def ShowKeys(entity):
+	print (entity.name+'\'s keys:')
+	print(f"Public key:  (e={hex(entity.keyPair.e)})")
+	print(f"Private key: (d={hex(entity.keyPair.d)})")
+	print(f"Modulo: (n={hex(entity.keyPair.n)})")
 
 def formatTime(timestamp):
 	year = timestamp[2:6]
@@ -23,6 +30,33 @@ def formatTime(timestamp):
 	"day" : day}
 	
 	return dictionary
+
+
+def save_keypair_to_file(name, keypair):
+	contains = False 
+	with open("keypairs.txt","r") as fo:
+		if name in fo.read() :
+			contains = True
+	if not contains:
+		with open("keypairs.txt","a") as f:
+			f.write(name+':d'+str(keypair.d)+':e'+str(keypair.e)+':n'+str(keypair.n)+'\n')
+	else:
+		print ("Keypair from this entity is already saved in the file.")
+
+
+def get_keypair_from_file(name):
+	with open("keypairs.txt","r") as f:
+		data = f.read()
+
+		key_info = ''
+		key_info = data[data.find(name) : data.find('\n', data.find(name))]
+		
+		d = int(key_info[key_info.find(':d')+2 : key_info.find(':e')])
+		e = int(key_info[key_info.find(':e')+2 : key_info.find(':n')])
+		n = int(key_info[key_info.find(':n')+2 : ].removesuffix('\n'))
+
+		keyPair = namedtuple('keyPair', 'e d n')
+		return keyPair(e, d, n)
 
 
 def VerifyCertificate(certificate, entity):

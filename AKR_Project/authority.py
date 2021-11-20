@@ -4,8 +4,8 @@ import time
 
 class Authority():
 	def __init__(self, name):
-		self.keyPair = GenerateKeyPair()
 		self.name = name
+		self.keyPair = GenerateKeyPair(self.name)
 
 	def GenerateCertificate(self, e, entity):
 		if entity.keyPair.e == e:	
@@ -33,8 +33,3 @@ class Authority():
 
 			return certificate
 	
-	
-	def ShowKeys(self):
-		print(f"Public key:  (e={hex(self.keyPair.e)})")
-		print(f"Private key: (d={hex(self.keyPair.d)})")
-		print(f"Modulo: (n={hex(self.keyPair.n)})")
