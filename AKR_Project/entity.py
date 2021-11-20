@@ -1,8 +1,9 @@
 from functions import GenerateKeyPair, formatTime, find_sig_in_file
 import time
 from hashlib import sha512
-from PyPDF2 import PdfFileReader, PdfFileMerger
+from PyPDF2 import PdfFileReader, PdfFileMerger						# pip install PyPDF2
 import pprint
+import textract														# pip install textract
 
 class Entity():
 	def __init__(self, name):
@@ -53,7 +54,9 @@ class Entity():
 			type_of_file = file_name[file_name.find("."):]
 
 			fi = open(file_name, "rb")
-			data_in = fi.read()
+			
+			if type_of_file == ".txt": data_in = fi.read() 
+			else: data_in = textract.process(file_name)
 
 			hash = str(sha512(data_in).hexdigest())
 			dec_hash = int(hash, 16)
@@ -101,6 +104,7 @@ class Entity():
 				})
 			file_name = file_name.replace(type_of_file,"")
 			
+			
 			fo = open(file_name+'_signed.pdf', 'wb')
 			pdf_merger.write(fo)
 			fo.close()
@@ -112,7 +116,7 @@ class Entity():
 			metadata = pdf_reader.getDocumentInfo()
 			pprint.pprint(metadata)
 			print()
-			
+
 			fi.close()
 			fo_signed.close()
 

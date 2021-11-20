@@ -1,6 +1,9 @@
-from Crypto.PublicKey import RSA
+from Crypto.PublicKey import RSA			#pip install pycryptodome
 from hashlib import sha512
+from PyPDF2 import PdfFileReader
 import time
+import textract
+
 
 # Functions
 def GenerateKeyPair():
@@ -87,12 +90,20 @@ def VerifySignature(msg, signature, e, n):
 					print("There is no signature in file, thus the verification process failed.")
 					return False
 		else:
-			fi = open(file_name, "rb")
-			data_in = fi.read()
-			
-			hash = str(sha512(data_in).hexdigest())
-			dec_hash = int(hash, 16)
-			fi.close()
+			with open(file_name, "rb") as fi:
+
+				pdf_reader = PdfFileReader(fi)
+
+				metadata = pdf_reader.getDocumentInfo()
+				data_in = textract.process(file_name)
+
+				if '/Signature' in metadata:
+
+					hash = str(sha512(data_in).hexdigest())
+					dec_hash = int(hash, 16)
+				else:
+					print("Document is not signed")
+					return False
 	else:
 		dec_hash = int.from_bytes(sha512(bytes(msg)).digest(), byteorder='big')
 	
