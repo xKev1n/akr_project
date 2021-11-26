@@ -12,8 +12,6 @@ class Entity():
 		self.keyPair = GenerateKeyPair(self.id, self.name)
 		self.certificate = None
 		self.message = None
-	
-
 
 	def EntityHasCertificate(self):
 		if self.certificate != None:

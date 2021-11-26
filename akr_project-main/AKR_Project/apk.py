@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import filedialog
+import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from main import signEval, apkSignFile, addCertificate
@@ -27,9 +28,26 @@ tabControl.pack(expand=1, fill="both")
 
 
 #################### sign tab #########################
-#TODO refresh dropdown menu
+
 authList = entities_authorities_name_list(True)
 entList = entities_authorities_name_list(False)
+
+
+def resreshValues():
+    dropMenuEnt['menu'].delete(0, 'end')
+    new_menu = entities_authorities_name_list(False)
+    for choice in new_menu:
+        dropMenuEnt['menu'].add_command(label=choice, command=tk._setit(chosenEnt, choice))
+
+    dropMenuEntSign['menu'].delete(0, 'end')
+    new_menu = entities_authorities_name_list(False)
+    for choice in new_menu:
+        dropMenuEntSign['menu'].add_command(label=choice, command=tk._setit(chosenEnt, choice))
+
+    dropMenuAut['menu'].delete(0, 'end')
+    new_menu = entities_authorities_name_list(True)
+    for choice in new_menu:
+        dropMenuAut['menu'].add_command(label=choice, command=tk._setit(chosenAut, choice))
 
 
 def choseInputSign():
@@ -51,14 +69,14 @@ signInputButton = Button(sign_tab, text="Chose file", command=choseInputSign, wi
 entLabel = Label(sign_tab, text="Chose Entity:", width=40, height=2, borderwidth=1, relief="sunken")
 chosenEnt = StringVar()
 chosenEnt.set(entList[0])
-dropMenuEnt = OptionMenu(sign_tab, chosenEnt, *entList)
+dropMenuEntSign = OptionMenu(sign_tab, chosenEnt, *entList)
 
 signButton = Button(sign_tab, text="Sign Chosen File", command=signDocument)
 
 signInputFile.grid(row=0, column=0)
 signInputButton.grid(row=0, column=1)
 entLabel.grid(row=2, column=0)
-dropMenuEnt.grid(row=2, column=1)
+dropMenuEntSign.grid(row=2, column=1)
 signButton.grid(row=3, column=0, pady=30)
 
 
@@ -68,6 +86,7 @@ signButton.grid(row=3, column=0, pady=30)
 def create_certificate():
     addCertificate("Entity1", "eeeee")
     messagebox.showinfo("Success certificate creation")
+
 
 authLabel = Label(certificate_tab, text="Chose Authority:")
 chosenAut = StringVar()
@@ -140,27 +159,37 @@ def creation():
     userInput.update()
     if (not userInput.get()):
         messagebox.showerror("Error", "Vyplňte název")
+
     else:
+
         file = open("keypairs.json", "r")
-        if(radioValue.get()==1):
+
+        if radioValue.get()==1:
             print("jsemtu")
-            if (userInput.get()):
+
+            if userInput.get():
+
                 if(does_containt(userInput.get(), file)):
                     messagebox.showinfo("Error!", "Authority/Entity already exists")
                     return
                 authority = Authority(str(userInput.get())) 
                 messagebox.showinfo("Success", "Succesfull creation of authority: " + userInput.get())
+
         elif(radioValue.get()==2):
+
             if (userInput.get()):
+
                 if(does_containt(userInput.get(), file)):
                     messagebox.showinfo("Error!", "Authority/Entity already exists")
                     return
                 entity = Entity(str(userInput.get()))
                 messagebox.showinfo("Success", "Succesfull creation of entity: " + userInput.get())
         file.close()
+        resreshValues()
+
 
 textEnt = Label(add_tab, text="Zadejte název entity/ autority:")
-addButton = Button(add_tab, text="Vytvořit",command = creation)
+addButton = Button(add_tab, text="Vytvořit", command=creation)
 
 textEnt.grid(row=1, column=0)
 addButton.grid(row=3, column=0)
