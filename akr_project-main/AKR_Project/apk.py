@@ -1,94 +1,106 @@
-
 from tkinter import *
 from tkinter import filedialog
 from tkinter import ttk
 from tkinter import messagebox
-from main import signEval
+from main import signEval, apkSignFile, addCertificate
 from authority import Authority
 from entity import Entity
-from functions import does_containt
+from functions import does_containt, entities_authorities_name_list
 
 
 root = Tk()
 root.title('Signature')
-#root.iconbitmap("favicon.ico")
+root.iconbitmap('favicon.ico')
 root.geometry('800x400')
 tabControl = ttk.Notebook(root)
 
 sign_tab = Frame(tabControl)
 check_tab = Frame(tabControl)
 add_tab = Frame(tabControl)
+certificate_tab = Frame(tabControl)
 
 tabControl.add(sign_tab, text='Sign file')
 tabControl.add(check_tab, text='Check sign')
-tabControl.add(add_tab, text='Add')
+tabControl.add(add_tab, text='Add Entity/Authority')
+tabControl.add(certificate_tab, text="Add certificate")
 tabControl.pack(expand=1, fill="both")
 
 
-
-
 #################### sign tab #########################
-
-
-signInputFile = Label(sign_tab, text="Path to file", width=40, height=2, borderwidth=1, relief="sunken")
-signOutputFile = Label(sign_tab, text="Path do directory", width=40, height=2, borderwidth=1, relief="sunken")
-CertificatedRadioValue = IntVar()
-certificatedRadio = Radiobutton(sign_tab, text="Certificated", variable=CertificatedRadioValue, value=1)
-nonCertificatedRadio = Radiobutton(sign_tab, text="Non certificated", variable=CertificatedRadioValue, value=2)
+#TODO refresh dropdown menu
+authList = entities_authorities_name_list(True)
+entList = entities_authorities_name_list(False)
 
 
 def choseInputSign():
     filename = filedialog.askopenfilename\
-        (initialdir="C:", title="Select a file", filetypes=[('pdf files', '*.pdf'),('txt files','*.txt')])
+        (initialdir="C:", title="Select a file", filetypes=[('pdf files', '*.pdf'), ('txt files', '*.txt')])
     signInputFile.config(text=filename)
 
 
-def choseOutput():
-    path = filedialog.askdirectory()
-    signOutputFile.config(text=path)
+def signDocument():
+    file_path = signInputFile.cget()
+    ent = chosenEnt
+    apkSignFile(file_path, ent)
+    messagebox.showinfo("File succesfully signed")
 
 
-authLabel = Label(sign_tab, text="Vyberte autoritu")
-optionsAut = ["Assembler", "Basic", "Brainfuck", "C", "Python"]
-chosenAut = StringVar()
-chosenAut.set(optionsAut[0])
-dropMenuAut = OptionMenu(sign_tab, chosenAut, *optionsAut)
-
-entLabel = Label(sign_tab, text="Vyberte entitu")
-optionsEnt = ["Jarda", "Pepa", "Jirina", "Ludvik"]
-chosenEnt = StringVar()
-chosenEnt.set(optionsEnt[0])
-dropMenuEnt = OptionMenu(sign_tab, chosenEnt, *optionsEnt)
-
-
+signInputFile = Label(sign_tab, text="Path to file", width=40, height=2, borderwidth=1, relief="sunken")
 signInputButton = Button(sign_tab, text="Chose file", command=choseInputSign, width=15, height=2)
-signOutputButton = Button(sign_tab, text="Chose directory", command=choseOutput, width=15, height=2)
-signButton = Button(sign_tab, text="Sign Chosen File") #, command= main.sigE1(), width=20, height=2)
 
+entLabel = Label(sign_tab, text="Chose Entity:", width=40, height=2, borderwidth=1, relief="sunken")
+chosenEnt = StringVar()
+chosenEnt.set(entList[0])
+dropMenuEnt = OptionMenu(sign_tab, chosenEnt, *entList)
+
+signButton = Button(sign_tab, text="Sign Chosen File", command=signDocument)
 
 signInputFile.grid(row=0, column=0)
 signInputButton.grid(row=0, column=1)
-signOutputFile.grid(row=1, column=0)
-signOutputButton.grid(row=1, column=1)
+entLabel.grid(row=2, column=0)
+dropMenuEnt.grid(row=2, column=1)
+signButton.grid(row=3, column=0, pady=30)
 
-certificatedRadio.grid(row=4, column=2)
-nonCertificatedRadio.grid(row=5, column=2)
-authLabel.grid(row=4, column=0)
-dropMenuAut.grid(row=4, column=1, )
-entLabel.grid(row=5, column=0)
-dropMenuEnt.grid(row=5, column=1)
 
-signButton.grid(row=10, column=2)
+################### certificate tab ####################
+
+
+def create_certificate():
+    addCertificate("Entity1", "eeeee")
+    messagebox.showinfo("Success certificate creation")
+
+authLabel = Label(certificate_tab, text="Chose Authority:")
+chosenAut = StringVar()
+chosenAut.set(authList[0])
+dropMenuAut = OptionMenu(certificate_tab, chosenAut, *authList)
+
+entLabel = Label(certificate_tab, text="Chose Entity:")
+chosenEnt = StringVar()
+chosenEnt.set(entList[0])
+dropMenuEnt = OptionMenu(certificate_tab, chosenEnt, *entList)
+
+signButton = Button(certificate_tab, text="Create Certificate", command=create_certificate)
+
+
+entLabel.grid(row=4, column=0)
+dropMenuEnt.grid(row=4, column=1)
+authLabel.grid(row=5, column=0)
+dropMenuAut.grid(row=5, column=1, )
+signButton.grid(row=10, column=1, pady=30)
+
+
 #################### check tab #########################
 
 
 checkFile = Label(check_tab, text="Path to file", width=50, height=2, borderwidth=1, relief="sunken")
+
 
 def choseInputCheck():
     checkFileName = filedialog.askopenfilename\
         (initialdir="C:", title="Select a file", filetypes=[('pdf files', '*.pdf'),('txt files','*.txt')])
     checkFile.config(text=checkFileName)
     checkButton["state"]= NORMAL
+
 
 def choseSignCheck():
     signEval()

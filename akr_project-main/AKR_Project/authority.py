@@ -7,7 +7,6 @@ class Authority():
 		self.name = name
 		self.id = "Authority"
 		self.keyPair = GenerateKeyPair(self.id, self.name)
-		
 
 	def GenerateCertificate(self, e, entity):
 		if entity.keyPair.e == e:	

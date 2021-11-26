@@ -7,11 +7,11 @@ import apk
 import os
 """
 # Entities
-entity1 = Entity("Entity1")
+#entity1 = Entity("Entity1")
 # creating new entity
 
 # testing saving and retrieving keypair from file
-keypairE1 = get_keypair_from_file(entity1.name)
+keypairE1 = get_keypair_from_file("aaaaaa")
 
 print("Entity 1")
 print(f"Public key:  (e={hex(keypairE1.e)})")
@@ -85,19 +85,21 @@ while i<2:
 	VerifySignature("signed_text.txt", txt_signature, entity1.keyPair.e, entity1.keyPair.n)
 	i += 1
 """
+
+
 def signEval():
-	filePath= apk.checkFile.cget("text")
-	ent= os.path.basename(apk.checkFile.cget("text"))
+	filePath = apk.checkFile.cget("text")
+	ent = os.path.basename(apk.checkFile.cget("text"))
 	print(ent)
 	print(filePath)
-	"""
-	if Entity(ent).EntityHasCertificate() == True:
+
+	if Entity(ent).EntityHasCertificate():
 		print(get_keypair_from_file(ent))
-	"""
-	entity= ent
-	entitySign= "d140111263614299868872663750368351800971083278637884970743158207444012665140553235144935653785840711317036916465673765901092001888475433221014130877911534940683"
-	authority= "CZ_Authority"
-	certificate= "d30921321136354723555129712496783865765041623320981679747660392471935620997016659980413184346423485846515413769506734297"
+
+	entity = ent
+	entitySign = "d140111263614299868872663750368351800971083278637884970743158207444012665140553235144935653785840711317036916465673765901092001888475433221014130877911534940683"
+	authority = "CZ_Authority"
+	certificate = "d30921321136354723555129712496783865765041623320981679747660392471935620997016659980413184346423485846515413769506734297"
 	try:
 		sign = {
 			"Entity": entity,
@@ -110,6 +112,20 @@ def signEval():
 		return None
 
 
+def apkSignFile(file, entName):
+	ent = Entity(entName)
+	keys = get_keypair_from_file(entName)
+	ent.GenerateSignature(file, keys.d, keys.n)
+
+
+def addCertificate(entName, authName):
+	ent = Entity(entName)
+	auth = Authority(authName)
+	keys = get_keypair_from_file(entName)
+	ent.certificate = auth.GenerateCertificate(keys.e, ent)
+
+
+"""
 def entityCall():			#no idea what this does
 	ent= Entity(str(apk.eSign.get()))
 	sigE1 = ent.GenerateSignature(ent.keyPair.e, ent.keyPair.d, ent.keyPair.n)
@@ -117,3 +133,4 @@ def entityCall():			#no idea what this does
 		ent.certificate = apk.autClick().authority.GenerateCertificate(ent.keyPair.e, ent)
 	#VerifySignature(ent+'_signed.pdf', sigE1, ent.keyPair.e, ent.keyPair.n)
 	return True
+"""

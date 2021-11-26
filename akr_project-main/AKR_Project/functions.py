@@ -62,7 +62,25 @@ def save_keypair_to_file(idcko, name, keypair):
 			return None
 	else:
 		print ("Keypair from this entity is already saved in the file.")
-		
+
+
+def entities_authorities_name_list(Auth):
+	names = []
+	with open("keypairs.json", "r") as f:
+
+		data = json.load(f)
+
+		theArray = data["objects"]
+
+		for item in theArray:
+			if Auth:
+				if item["id"] == "Authority":
+					names.append(item["name"])
+			else:
+				if item["id"] == "Entity":
+					names.append(item["name"])
+
+		return names
 
 
 def get_keypair_from_file(name):
@@ -71,7 +89,7 @@ def get_keypair_from_file(name):
 		e = ""
 		d = ""
 		n = ""
-		theArray = data["obejcts"]
+		theArray = data["objects"]
 		for item in theArray:
 			if item["name"] == name:
 				e = item["e"]
@@ -94,6 +112,7 @@ def VerifyCertificate(certificate, entity):
 		return validity
 	else:
 		print("Entity {0} doesn't have any certificates".format(entity.name))
+
 
 def find_sig_in_file(data):
 	if data.find('\\u2557') != -1 or data.find('\\u255d') != -1:
