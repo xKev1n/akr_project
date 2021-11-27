@@ -52,7 +52,7 @@ entity2.ShowCertificates()
 VerifyCertificate(entity1.certificate, entity2)
 
 i = 0
-while i<2:
+while i<1:
 
 	print("Testing valid file")
 	with open("text.txt", "r") as f:

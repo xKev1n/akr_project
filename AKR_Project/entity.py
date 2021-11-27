@@ -54,8 +54,12 @@ class Entity():
 				data_in = fi.read() 
 			else: 
 				raw = parser.from_file(file_name)
-				data_in = raw['content']				#textract.process(file_name)
-			data_in = data_in.encode() if type(data_in) == str else data_in
+				data_in = raw['content']				
+			
+			if type(data_in) == str:
+				data_in = data_in.translate(str.maketrans('', '', ' \n\t\r'))
+				data_in = data_in.encode()
+
 			hash = str(sha512(data_in).hexdigest())
 			dec_hash = int(hash, 16)
 			fi.close()

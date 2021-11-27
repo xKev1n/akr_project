@@ -116,7 +116,6 @@ def VerifySignature(msg, signature, e, n):
 							f.write(full_data)					
 
 						hash = str(sha512(data_in).hexdigest())
-						#print(data_in)
 						dec_hash = int(hash, 16)						#Is same only for first cycle. Hashes don't match on signed documents.
 					else:
 						print("Signature in file doesn't match signature given by argument.")
@@ -132,11 +131,12 @@ def VerifySignature(msg, signature, e, n):
 				metadata = pdf_reader.getDocumentInfo()
 				raw = parser.from_file(file_name)
 				data_in = raw['content']
-				#print(data_in)
-				#data_in = textract.process(file_name)
+
+				if type(data_in) == str:
+					data_in = data_in.translate(str.maketrans('', '', ' \n\t\r'))
+					data_in = data_in.encode()
 
 				if '/Signature' in metadata:
-					data_in = data_in.encode() if type(data_in) == str else data_in
 					hash = str(sha512(data_in).hexdigest())
 					dec_hash = int(hash, 16)
 				else:
