@@ -1,4 +1,4 @@
-from functions import VerifyCertificate, VerifySignature, save_keypair_to_file, get_keypair_from_file
+from functions import VerifyCertificate, VerifySignature, get_keypair_from_file
 from entity import Entity
 from authority import Authority
 

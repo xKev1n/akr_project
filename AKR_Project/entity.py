@@ -3,8 +3,7 @@ import time
 from hashlib import sha512
 from PyPDF2 import PdfFileReader, PdfFileMerger						# pip install PyPDF2
 import pprint
-import textract														# pip install textract
-
+from tika import parser
 class Entity():
 	def __init__(self, name):
 		self.name = name
@@ -51,9 +50,12 @@ class Entity():
 
 			fi = open(file_name, "rb")
 			
-			if type_of_file == ".txt": data_in = fi.read() 
-			else: data_in = textract.process(file_name)
-
+			if type_of_file == ".txt": 
+				data_in = fi.read() 
+			else: 
+				raw = parser.from_file(file_name)
+				data_in = raw['content']				#textract.process(file_name)
+			data_in = data_in.encode() if type(data_in) == str else data_in
 			hash = str(sha512(data_in).hexdigest())
 			dec_hash = int(hash, 16)
 			fi.close()

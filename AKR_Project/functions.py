@@ -2,7 +2,8 @@ from Crypto.PublicKey import RSA			#pip install pycryptodome
 from hashlib import sha512
 from PyPDF2 import PdfFileReader
 import time
-import textract
+from tika import parser 					# pip install tika
+
 from collections import namedtuple
 
 
@@ -129,10 +130,13 @@ def VerifySignature(msg, signature, e, n):
 				pdf_reader = PdfFileReader(fi)
 
 				metadata = pdf_reader.getDocumentInfo()
-				data_in = textract.process(file_name)
+				raw = parser.from_file(file_name)
+				data_in = raw['content']
+				#print(data_in)
+				#data_in = textract.process(file_name)
 
 				if '/Signature' in metadata:
-
+					data_in = data_in.encode() if type(data_in) == str else data_in
 					hash = str(sha512(data_in).hexdigest())
 					dec_hash = int(hash, 16)
 				else:
