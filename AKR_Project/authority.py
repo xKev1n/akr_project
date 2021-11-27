@@ -5,7 +5,8 @@ import time
 class Authority():
 	def __init__(self, name):
 		self.name = name
-		self.keyPair = GenerateKeyPair(self.name)
+		self.id = "Authority"
+		self.keyPair = GenerateKeyPair(self.id, self.name)
 
 	def GenerateCertificate(self, e, entity):
 		if entity.keyPair.e == e:	
