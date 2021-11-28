@@ -103,7 +103,7 @@ def get_keypair_from_file(name):
 
 
 		keyPair = namedtuple('keyPair', ['e', 'd', 'n'])
-		return keyPair(e, d, n)
+		return keyPair(int(e), int(d), int(n))
 
 
 def VerifyCertificate(certificate, entity):
