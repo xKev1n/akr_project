@@ -1,203 +1,136 @@
-from Crypto.PublicKey import RSA  # pip install pycryptodome
-from hashlib import sha512
-from PyPDF2 import PdfFileReader
-import time
-from tika import parser  # pip install tika
-from collections import namedtuple
 import json
 
+from functions import VerifyCertificate, VerifySignature, save_keypair_to_file, get_keypair_from_file
+from entity import Entity
+from authority import Authority
+import apk
+import os
 
-# Functions
-def GenerateKeyPair(idcko, name):
-    # function to generate a pair of public key, private key and modulo
-    keyPair = RSA.generate(bits=1024)
-    save_keypair_to_file(idcko, str(name), keyPair)
-    return keyPair
+"""
+# Entities
+entity1 = Entity("Entity1")
+# creating new entity
 
+# testing saving and retrieving keypair from file
+keypairE1 = get_keypair_from_file(entity1.name)
 
-def ShowKeys(entity):
-    print(entity.name + '\'s keys:')
-    print(f"Public key:  (e={hex(entity.keyPair.e)})")
-    print(f"Private key: (d={hex(entity.keyPair.d)})")
-    print(f"Modulo: (n={hex(entity.keyPair.n)})")
+print("Entity 1")
+print(f"Public key:  (e={hex(keypairE1.e)})")
+print(f"Private key: (d={hex(keypairE1.d)})")
+print(f"Modulo: (n={hex(keypairE1.n)})")
+print(hex(keypairE1.e) == hex(entity1.keyPair.e))
+print(hex(keypairE1.d) == hex(entity1.keyPair.d))
+print(hex(keypairE1.n) == hex(entity1.keyPair.n))
 
+entity2 = Entity("Entity2")
+# creating new entity
 
-def formatTime(timestamp):
-    year = timestamp[2:6]
-    month = timestamp[6:8]
-    day = timestamp[8:10]
+keypairE2 = get_keypair_from_file(entity2.name)
 
-    dictionary = {
-        "year": year,
-        "month": month,
-        "day": day}
+print("Entity2")
+print(f"Public key:  (e={hex(keypairE2.e)})")
+print(f"Private key: (d={hex(keypairE2.d)})")
+print(f"Modulo: (n={hex(keypairE2.n)})")
+print(hex(keypairE2.e) == hex(entity2.keyPair.e))
+print(hex(keypairE2.d) == hex(entity2.keyPair.d))
+print(hex(keypairE2.n) == hex(entity2.keyPair.n))
 
-    return dictionary
+# Authorities
+authority1 = Authority("CZ_AUTHORITY")
+# creating new authority
 
+sigE1 = entity1.GenerateSignature(entity1.keyPair.e, entity1.keyPair.d, entity1.keyPair.n)
+# signing the message with entity's private key
 
-def does_containt(name, file):
-    if name in file.read():
-        return True
-    else:
-        return False
+# verifying signature with entity's public key
+if VerifySignature(entity1.keyPair.e, sigE1, entity1.keyPair.e, entity1.keyPair.n) == True:
+	entity1.certificate = authority1.GenerateCertificate(entity1.keyPair.e, entity1)
+# if hashes match, generating certificate for the entity
 
+print("Certificates:")
+entity1.ShowCertificates()
+entity2.ShowCertificates()
 
-def save_keypair_to_file(idcko, name, keypair):
-	contains = False
-	with open("keypairs.json", "r", encoding="ISO-8859-1") as fo:
-		if name in fo.read():
-			contains = True
-	if not contains:
-		data = {}
-		with open("keypairs.json", "r") as f:
-			data = json.load(f)
+VerifyCertificate(entity1.certificate, entity2)
 
-		with open("keypairs.json", "w") as f:
-			toWrite = {
-				"id": idcko,
-				"name": name,
-				"d"	:	str(keypair.d),
-				"e"	:	str(keypair.e),
-				"n"	:	str(keypair.n)
-			}
-			data["objects"].append(toWrite)
-			# f.write(idcko + " " + name+':d'+str(keypair.d)+':e'+str(keypair.e)+':n'+str(keypair.n)+'\n')
-			f.write(json.dumps(data, indent=4))
-			return None
-	else:
-		print ("Keypair from this entity is already saved in the file.")
+i = 0
+while i < 1:
+	print("Testing valid file")
+	with open("text.txt", "r") as f:
+		entity1.message = f.read().encode()
 
+		sigF1 = entity1.GenerateSignature(entity1.message, entity1.keyPair.d, entity1.keyPair.n)
+		# signing the message with entity's private key
 
-def entities_authorities_name_list(Auth):
-	names = []
-	with open("keypairs.json", "r") as f:
+		VerifySignature(entity1.message, sigF1, entity1.keyPair.e, entity1.keyPair.n)
+	# verifying signature with entity's public key
 
-		data = json.load(f)
+	print("Testing altered file")
+	with open("text_altered.txt", "r") as f_altered:
+		altered_message = f_altered.read().encode()
 
-		theArray = data["objects"]
+		sigF1 = entity1.GenerateSignature(entity1.message, entity1.keyPair.d, entity1.keyPair.n)
 
-		for item in theArray:
-			if Auth:
-				if item["id"] == "Authority":
-					names.append(item["name"])
-			else:
-				if item["id"] == "Entity":
-					names.append(item["name"])
+		VerifySignature(altered_message, sigF1, entity1.keyPair.e, entity1.keyPair.n)
 
-		return names
+	print("Signature into metadata for PDF:")
+	sig = entity1.GenerateSignature('doc.pdf', entity1.keyPair.d, entity1.keyPair.n)
+	VerifySignature('doc_signed.pdf', sig, entity1.keyPair.e, entity1.keyPair.n)
 
-
-def get_keypair_from_file(name):
-	with open("keypairs.json" ,"r") as f:
-		data = json.load(f)
-		e = ""
-		d = ""
-		n = ""
-
-		theArray = data["objects"]
-		for item in theArray:
-			if item["name"] == name:
-				e = item["e"]
-				d = item["d"]
-				n = item["n"]
+	print("Signature into metadata for TXT:")
+	txt_signature = entity1.GenerateSignature("signed_text.txt", entity1.keyPair.d, entity1.keyPair.n)
+	VerifySignature("signed_text.txt", txt_signature, entity1.keyPair.e, entity1.keyPair.n)
+	i += 1
+"""
 
 
-		keyPair = namedtuple('keyPair', ['e', 'd', 'n'])
-		return keyPair(int(e), int(d), int(n))
+def signEval():
+	filePath = apk.checkFile.cget("text")
+	ent = os.path.basename(apk.checkFile.cget("text"))
+	print(ent)
+	print(filePath)
 
+	if Entity(ent).EntityHasCertificate():
+		print(get_keypair_from_file(ent))
 
-def VerifyCertificate(certificate, entity):
-	if entity.EntityHasCertificate():
-		actual_time = time.time()
-		validity = True
-		if certificate != entity.certificate or certificate["Owner"] != entity.name or certificate["ValidTo"] < actual_time or certificate["ValidFrom"] > actual_time or certificate["Public_Key"] != hex (entity.keyPair.e) or certificate["From_Authority"] != entity.certificate["From_Authority"]:
-			validity = False
-			print("Certificate is invalid!")
-			return validity
-		print("Certificate is valid.")
-		return validity
-	else:
-		print("Entity {0} doesn't have any certificates".format(entity.name))
-
-
-def find_sig_in_file(data):
-	if data.find('\\u2557') != -1 or data.find('\\u255d') != -1:
-		start_index = data.find("/Signature:") + 12
-
-		end_index = data.find("/ModDate")
-
-		signature_in_file = data[start_index : end_index]
-
-		return signature_in_file
-	else:
+	entity = ent
+	entitySign = "d140111263614299868872663750368351800971083278637884970743158207444012665140553235144935653785840711317036916465673765901092001888475433221014130877911534940683"
+	authority = "CZ_Authority"
+	certificate = "d30921321136354723555129712496783865765041623320981679747660392471935620997016659980413184346423485846515413769506734297"
+	try:
+		sign = {
+			"Entity": entity,
+			"EntitySign": entitySign,
+			"Authority": authority,
+			"Certificate": certificate,
+		}
+		return sign
+	except:
 		return None
 
-def VerifySignature(msg, signature, e, n):
-	# RSA verification of the signature
-	# User will send Public Key to Authority to verify it
-	# Authority will sign the Public Key with its private key
 
-	if type(msg) == str:
-
-		file_name = msg
-		type_of_file = file_name[file_name.find("."):]
-
-		if type_of_file == ".txt":
-			with open(file_name, "r") as fi:
-				data_in = fi.read()
-
-				signature_in_file = find_sig_in_file(data_in)
-
-				if signature_in_file != None:
-
-					if signature_in_file == signature:
-						full_data = data_in
-						data_in = data_in.replace(data_in[data_in.find('b\"\\\\u2557b') : ], "")  # Hashes not match for some reason...
+def apkSignFile(file, entName):
+	ent = Entity(entName)
+	keys = get_keypair_from_file(entName)
+	d = keys.d
+	n = keys.n
+	ent.GenerateSignature(file, int(d), int(n))
 
 
-						with open(file_name, "w") as f:
-							f.write(data_in)
-						with open(file_name, "rb") as f:
-							data_in = f.read()
-						with open(file_name, "w") as f:
-							f.write(full_data)
-
-						hash = str(sha512(data_in).hexdigest())
-						# print(data_in)
-						dec_hash = int(hash, 16)  # Is same only for first cycle. Hashes don't match on signed documents.
-					else:
-						print("Signature in file doesn't match signature given by argument.")
-						return False
-				else:
-					print("There is no signature in file, thus the verification process failed.")
-					return False
-		else:
-			with open(file_name, "rb") as fi:
-
-				pdf_reader = PdfFileReader(fi)
-
-				metadata = pdf_reader.getDocumentInfo()
-				raw = parser.from_file(file_name)
-				data_in = raw['content']
-
-				if type(data_in) == str:
-					data_in = data_in.translate(str.maketrans('', '', ' \n\t\r'))
-					data_in = data_in.encode()
-				if '/Signature' in metadata:
-
-					hash = str(sha512(data_in).hexdigest())
-					dec_hash = int(hash, 16)
-				else:
-					print("Document is not signed")
-					return False
-	else:
-		dec_hash = int.from_bytes(sha512(bytes(msg)).digest(), byteorder='big')
+def addCertificate(entName, authName):
+	ent = Entity(entName)
+	auth = Authority(authName)
+	keys = get_keypair_from_file(entName)
+	ent.certificate = auth.GenerateCertificate(keys.e, ent)
 
 
-	hashFromSignature = pow(int(signature, 16), e, n)  # PKs are different for every rerun.
-	print("Hash received: {0}\nHash calculated: {1}\nHashes match: {2}\n".format(hex(dec_hash), hex(hashFromSignature), dec_hash == hashFromSignature))
 
-	if dec_hash == hashFromSignature:
-		return True
-	else:
-		return False
+"""
+def entityCall():			#no idea what this does
+	ent= Entity(str(apk.eSign.get()))
+	sigE1 = ent.GenerateSignature(ent.keyPair.e, ent.keyPair.d, ent.keyPair.n)
+	if VerifySignature(ent.keyPair.e, sigE1, ent.keyPair.e, ent.keyPair.n) == True:
+		ent.certificate = apk.autClick().authority.GenerateCertificate(ent.keyPair.e, ent)
+	#VerifySignature(ent+'_signed.pdf', sigE1, ent.keyPair.e, ent.keyPair.n)
+	return True
+"""
