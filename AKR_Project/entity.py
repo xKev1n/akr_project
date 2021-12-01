@@ -71,7 +71,7 @@ class Entity():
 		signature = pow(dec_hash, d, n)
 		# print("Signature: "+str(hex(signature))+"\n")
 
-		if type_of_file == ".pdf":
+		if type_of_file == ".pdf": #checking if file is a pdf document
 
 			fi = open(file_name, "rb")
 			pdf_reader = PdfFileReader(fi)
@@ -82,18 +82,18 @@ class Entity():
 			pdf_merger.append(fi)
 
 			if self.EntityHasCertificate() == True:
-				pdf_merger.addMetadata({
+				pdf_merger.addMetadata({	#inputing certificate into metadata
 					'/Certificate': self.PrintCertificate()
 				})
 
-			pdf_merger.addMetadata({
+			pdf_merger.addMetadata({	#inputing signature into metadata
 				'/Signature': str(hex(signature))
 			})
 
-			for keys, values in metadata.items():
+			for keys, values in metadata.items():	#inputing other important values into metadata
 				if keys == '/CreationDate':
 					values = formatTime(values)
-					pdf_merger.addMetadata({
+					pdf_merger.addMetadata({	
 						keys: "{0}-{1}-{2}".format(values["year"], values["month"], values["day"])
 					})
 				elif keys == '/ModDate':
@@ -107,13 +107,13 @@ class Entity():
 					})
 			file_name = file_name.replace(type_of_file, "")
 
-			fo = open(file_name + '_signed.pdf', 'wb')
+			fo = open(file_name + '_signed.pdf', 'wb')	#a new file gets created that is signed
 			pdf_merger.write(fo)
 			fo.close()
 
 			fo_signed = open(file_name + '_signed.pdf', 'rb')
 
-			print("Metadata:")
+			print("Metadata:")	
 			pdf_reader = PdfFileReader(fo_signed)
 			metadata = pdf_reader.getDocumentInfo()
 			pprint.pprint(metadata)

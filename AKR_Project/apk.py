@@ -10,7 +10,7 @@ from functions import does_containt, entities_authorities_name_list, getPDFFileS
 
 root = Tk()
 root.title('Signature')
-root.iconbitmap('favicon.ico')
+#root.iconbitmap('favicon.ico')
 root.geometry('800x400')
 tabControl = ttk.Notebook(root)
 
@@ -114,23 +114,23 @@ signButton.grid(row=10, column=1, pady=30)
 checkFile = Label(check_tab, text="Path to file", width=50, height=2, borderwidth=1, relief="sunken")
 
 
-def choseInputCheck():
+def choseInputCheck():  #function opening new window which allows us to select txt/pdf files
     path, filename = filedialog.askopenfilename \
         (title="Select a file", filetypes=[('pdf files', '*.pdf')]).rsplit("/", 1)
     checkFile.config(text=filename)
 
 
-def signCheck():
-    file_name = str(checkFile.cget("text"))
+def signCheck():    #function for checking signature and certificate
+    file_name = str(checkFile.cget("text"))     #path to file
     ent = main.entDic[chosenEntCheck.get()]
     if(file_name[-3:] == "pdf"):
         signatue = getPDFFileSignature(file_name)
         file_certificate = getPDFFileCertificate(file_name)
-        if signatue == None:
+        if signatue == None:    #checking if file is signed
             messagebox.showinfo("Signature Check", "File is not signed")
-        else:
+        else:                   #if file is signed we verify its signature
             if VerifySignature(file_name, signatue, ent.keyPair.e, ent.keyPair.n):
-                if file_certificate == None:
+                if file_certificate == None:    #this conditions check if certificate is present
                     messagebox.showinfo("Signature Check", "File has not been changed, but entity hasn't certificate")
 
                 else:
@@ -187,7 +187,7 @@ authorityRadio = Radiobutton(add_tab, text="Authority", variable=radioValue, val
 entityRadio = Radiobutton(add_tab, text="Entity", variable=radioValue, value=2)
 
 
-def creation():
+def creation():     #function takes value from users input and calls method which creates entity or authority
     userInput.update()
     if (not userInput.get()):
         messagebox.showerror("Error", "Vyplňte název")
@@ -196,7 +196,7 @@ def creation():
 
         file = open("keypairs.json", "r")
 
-        if radioValue.get()==1:
+        if radioValue.get()==1:     #creating authority
             print("jsemtu")
 
             if userInput.get():
@@ -210,7 +210,7 @@ def creation():
                 messagebox.showinfo("Authority", "Authority successfully added")
 
 
-        elif(radioValue.get()==2):
+        elif(radioValue.get()==2):    #creating entity
 
             if (userInput.get()):
 
