@@ -40,7 +40,7 @@ def does_containt(name, file):
         return False
 
 
-def save_keypair_to_file(idcko, name, keypair):
+def save_keypair_to_file(idcko, name, keypair): #function that adds entity/authority to a file 
 	contains = False
 	with open("keypairs.json", "r") as fo:
 		if does_containt(name, fo):
@@ -48,7 +48,7 @@ def save_keypair_to_file(idcko, name, keypair):
 	if not contains:
 		strKey = keypair.exportKey().decode('UTF-8')
 		data = {}
-		with open("keypairs.json", "r") as f:
+		with open("keypairs.json", "r") as f: #we read the preexisting json array and then append to it
 			data = json.load(f)
 
 		with open("keypairs.json", "w") as f:
@@ -59,13 +59,13 @@ def save_keypair_to_file(idcko, name, keypair):
 				"key": strKey
 			}
 			data["objects"].append(toWrite)
-			f.write(json.dumps(data, indent=4))
+			f.write(json.dumps(data, indent=4)) #overwriting the file with the new array
 			return None
 	else:
 		print ("Keypair from this entity is already saved in the file.")
 
 
-def entities_authorities_name_list(Auth):
+def entities_authorities_name_list(Auth): #authorities and entities get inputed from the .json file
 	names = []
 	with open("keypairs.json", "r") as f:
 
@@ -84,7 +84,7 @@ def entities_authorities_name_list(Auth):
 		return names
 
 
-def VerifyCertificate(certificate, entity):
+def VerifyCertificate(certificate, entity): #veryfiing certificate
 	if entity.EntityHasCertificate():
 		actual_time = time.time()
 		validity = True
@@ -99,7 +99,7 @@ def VerifyCertificate(certificate, entity):
 
 
 
-def getPDFFileSignature(file):
+def getPDFFileSignature(file): #getting Signature from a PDF file
 	with open(file, "rb") as f:
 
 		pdfReader = PdfFileReader(f)
@@ -110,7 +110,7 @@ def getPDFFileSignature(file):
 			return None
 
 
-def getPDFFileCertificate(file):
+def getPDFFileCertificate(file): #getting certificate from a PDF file
 	with open(file, "rb") as f:
 		pdfReader = PdfFileReader(f)
 		metadata = pdfReader.getDocumentInfo()
@@ -124,8 +124,9 @@ def VerifySignature(msg, signature, e, n):
 	# RSA verification of the signature
 	# User will send Public Key to Authority to verify it
 	# Authority will sign the Public Key with its private key
+	# 'msg' holds the path to the file 
 
-	if type(msg) == str:
+	if type(msg) == str: 
 
 		file_name = msg
 		type_of_file = file_name[file_name.find("."):]
@@ -133,7 +134,7 @@ def VerifySignature(msg, signature, e, n):
 
 			pdf_reader = PdfFileReader(fi)
 
-			metadata = pdf_reader.getDocumentInfo()
+			metadata = pdf_reader.getDocumentInfo() #we read metadata using PyPDF
 			raw = parser.from_file(file_name)
 			data_in = raw['content']
 
@@ -142,7 +143,7 @@ def VerifySignature(msg, signature, e, n):
 				data_in = data_in.encode()
 			if '/Signature' in metadata:
 
-				hash = str(sha512(data_in).hexdigest())
+				hash = str(sha512(data_in).hexdigest()) #hash of the data from file gets calculated
 				dec_hash = int(hash, 16)
 			else:
 				print("Document is not signed")

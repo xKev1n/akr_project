@@ -8,7 +8,7 @@ import apk
 import os
 
 
-def initialize_entities_authorities():
+def initialize_entities_authorities(): #function inputs entities and authorities from keypair.json (is called at start)
 	with open("keypairs.json" ,"r") as f:
 		data = json.load(f)
 		theArray = data["objects"]
@@ -18,7 +18,7 @@ def initialize_entities_authorities():
 			bitKey = key.encode('UTF-8')
 			finKey = RSA.importKey(bitKey)
 
-			if item["id"] == "Authority":
+			if item["id"] == "Authority": #the difference btw authority and entity is determined by 'id' which is either "Authority" or "Entity"
 				authDic[name] = Authority(name)
 				authDic[name].keyPair = finKey
 
@@ -28,19 +28,19 @@ def initialize_entities_authorities():
 
 
 
-def apkSignFile(file, entName):
+def apkSignFile(file, entName): #singing a file
 	ent = entDic[entName]
 	keys = ent.keyPair
 	ent.GenerateSignature(file, ent.keyPair.d, ent.keyPair.n)
 
 
-def addCertificate(entName, authName):
+def addCertificate(entName, authName): #adding certificate to a enity
 	ent = entDic[entName]
 	auth = authDic[authName]
 	ent.certificate = auth.GenerateCertificate(ent.keyPair.e, ent)
 
 
-def create_auth_ent(authority, name):
+def create_auth_ent(authority, name): #functions create authority or entity
 	if authority:
 		aut = Authority(name)
 		aut.keyPair = GenerateKeyPair(aut.id, aut.name)
