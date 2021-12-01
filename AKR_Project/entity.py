@@ -1,4 +1,4 @@
-from functions import formatTime, find_sig_in_file
+from functions import formatTime
 import time
 from hashlib import sha512
 from PyPDF2 import PdfFileReader, PdfFileMerger  # pip install PyPDF2

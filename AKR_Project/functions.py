@@ -98,18 +98,6 @@ def VerifyCertificate(certificate, entity):
 		print("Entity {0} doesn't have any certificates".format(entity.name))
 
 
-def find_sig_in_file(data):
-	if data.find('\\u2557') != -1 or data.find('\\u255d') != -1:
-		start_index = data.find("/Signature:") + 12
-
-		end_index = data.find("/ModDate")
-
-		signature_in_file = data[start_index : end_index]
-
-		return signature_in_file
-	else:
-		return None
-
 
 def getPDFFileSignature(file):
 	with open(file, "rb") as f:
@@ -141,55 +129,24 @@ def VerifySignature(msg, signature, e, n):
 
 		file_name = msg
 		type_of_file = file_name[file_name.find("."):]
+		with open(file_name, "rb") as fi:
 
-		if type_of_file == ".txt":
-			with open(file_name, "r") as fi:
-				data_in = fi.read()
+			pdf_reader = PdfFileReader(fi)
 
-				signature_in_file = find_sig_in_file(data_in)
+			metadata = pdf_reader.getDocumentInfo()
+			raw = parser.from_file(file_name)
+			data_in = raw['content']
 
-				if signature_in_file != None:
+			if type(data_in) == str:
+				data_in = data_in.translate(str.maketrans('', '', ' \n\t\r'))
+				data_in = data_in.encode()
+			if '/Signature' in metadata:
 
-					if signature_in_file == signature:
-						full_data = data_in
-						data_in = data_in.replace(data_in[data_in.find('b\"\\\\u2557b') : ], "")  # Hashes not match for some reason...
-
-
-						with open(file_name, "w") as f:
-							f.write(data_in)
-						with open(file_name, "rb") as f:
-							data_in = f.read()
-						with open(file_name, "w") as f:
-							f.write(full_data)
-
-						hash = str(sha512(data_in).hexdigest())
-						# print(data_in)
-						dec_hash = int(hash, 16)  # Is same only for first cycle. Hashes don't match on signed documents.
-					else:
-						print("Signature in file doesn't match signature given by argument.")
-						return False
-				else:
-					print("There is no signature in file, thus the verification process failed.")
-					return False
-		else:
-			with open(file_name, "rb") as fi:
-
-				pdf_reader = PdfFileReader(fi)
-
-				metadata = pdf_reader.getDocumentInfo()
-				raw = parser.from_file(file_name)
-				data_in = raw['content']
-
-				if type(data_in) == str:
-					data_in = data_in.translate(str.maketrans('', '', ' \n\t\r'))
-					data_in = data_in.encode()
-				if '/Signature' in metadata:
-
-					hash = str(sha512(data_in).hexdigest())
-					dec_hash = int(hash, 16)
-				else:
-					print("Document is not signed")
-					return False
+				hash = str(sha512(data_in).hexdigest())
+				dec_hash = int(hash, 16)
+			else:
+				print("Document is not signed")
+				return False
 	else:
 		dec_hash = int.from_bytes(sha512(bytes(msg)).digest(), byteorder='big')
 

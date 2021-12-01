@@ -52,7 +52,7 @@ def refreshValues():
 
 def choseInputSign():
     path, filename = filedialog.askopenfilename\
-        (title="Select a file", filetypes=[('pdf files', '*.pdf'), ('txt files', '*.txt')]).rsplit("/", 1)
+        (title="Select a file", filetypes=[('pdf files', '*.pdf')]).rsplit("/", 1)
     signInputFile.config(text=filename)
 
 
@@ -111,35 +111,49 @@ signButton.grid(row=10, column=1, pady=30)
 #################### check tab #########################
 
 
-
-
-
 checkFile = Label(check_tab, text="Path to file", width=50, height=2, borderwidth=1, relief="sunken")
 
 
 def choseInputCheck():
     path, filename = filedialog.askopenfilename \
-        (title="Select a file", filetypes=[('pdf files', '*.pdf'), ('txt files', '*.txt')]).rsplit("/", 1)
+        (title="Select a file", filetypes=[('pdf files', '*.pdf')]).rsplit("/", 1)
     checkFile.config(text=filename)
 
 
 def signCheck():
     file_name = str(checkFile.cget("text"))
     ent = main.entDic[chosenEntCheck.get()]
-    signatue = getPDFFileSignature(file_name)
-    file_certificate = getPDFFileCertificate(file_name)
-    if signatue == None:
-        messagebox.showinfo("Signature Check", "File is not signed")
-    else:
-        if VerifySignature(file_name, signatue, ent.keyPair.e, ent.keyPair.n):
-            if file_certificate == None:
-               messagebox.showinfo("Signature Check", "File has not been changed, but entity hasn't certificate")
-
-            else:
-                messagebox.showinfo("Signature Check", "File has not been changed, and is signed by certificated person,...\n" + file_certificate)
+    if(file_name[-3:] == "pdf"):
+        signatue = getPDFFileSignature(file_name)
+        file_certificate = getPDFFileCertificate(file_name)
+        if signatue == None:
+            messagebox.showinfo("Signature Check", "File is not signed")
         else:
-            messagebox.showinfo("Signature Check", "File was not signed by this person or file has been changed")
+            if VerifySignature(file_name, signatue, ent.keyPair.e, ent.keyPair.n):
+                if file_certificate == None:
+                    messagebox.showinfo("Signature Check", "File has not been changed, but entity hasn't certificate")
 
+                else:
+                    messagebox.showinfo("Signature Check", "File has not been changed, and is signed by certificated person,...\n" + file_certificate)
+            else:
+                messagebox.showinfo("Signature Check", "File was not signed by this person or file has been changed")
+    else:
+        file_name = str(checkFile.cget("text"))
+        ent = main.entDic[chosenEntCheck.get()]
+        signatue = getPDFFileSignature(file_name)
+        file_certificate = getPDFFileCertificate(file_name)
+        if signatue == None:
+            messagebox.showinfo("Signature Check", "File is not signed")
+        else:
+            if VerifySignature(file_name, signatue, ent.keyPair.e, ent.keyPair.n):
+                if file_certificate == None:
+                    messagebox.showinfo("Signature Check", "File has not been changed, but entity hasn't certificate")
+
+                else:
+                    messagebox.showinfo("Signature Check",
+                                        "File has not been changed, and is signed by certificated person,...\n" + file_certificate)
+            else:
+                messagebox.showinfo("Signature Check", "File was not signed by this person or file has been changed")
 
 
 entLabel = Label(check_tab, text="Chose Entity:")
