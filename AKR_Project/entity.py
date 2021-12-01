@@ -56,12 +56,8 @@ class Entity():
 			type_of_file = file_name[file_name.find("."):]
 
 			fi = open(file_name, "rb")
-
-			if type_of_file == ".txt":
-				data_in = fi.read()
-			else:
-				raw = parser.from_file(file_name)
-				data_in = raw['content']
+			raw = parser.from_file(file_name)
+			data_in = raw['content']
 
 			if type(data_in) == str:
 				data_in = data_in.translate(str.maketrans('', '', ' \n\t\r'))
@@ -127,25 +123,6 @@ class Entity():
 			fo_signed.close()
 
 			return str(hex(signature))
-		elif type_of_file == '.txt':
-			with open(file_name, 'r') as f:
-				content = f.read()
-				if find_sig_in_file(content) == None:
-					data = ""
-					if self.EntityHasCertificate() == True:
-						data += '/Certificate: ' + self.PrintCertificate()
 
-					data += '/Signature: ' + str(hex(signature))
-					data += '/ModDate: ' + time.strftime('%Y-%m-%d', time.localtime(time.time()))
-
-					with open(file_name, "a") as fo:
-						output = "╗" + str(data.encode('unicode-escape')) + "╝"  # ALT+187, 188
-						fo.write(str(output.encode('unicode-escape')))
-
-					return str(hex(signature))
-				else:
-					print("File has already been signed")
-					return str(find_sig_in_file(content))
-		# TODO: Implement functionality of either replacing old signature or alter verification mechanism to handle null passing.
 		else:
 			return str(hex(signature))
