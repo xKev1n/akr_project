@@ -33,7 +33,7 @@ authList = entities_authorities_name_list(True)
 entList = entities_authorities_name_list(False)
 
 
-def refreshValues():
+def refreshValues(): #method for updating all dropDown menus
     dropMenuEnt['menu'].delete(0, 'end')
     new_menu = entities_authorities_name_list(False)
     for choice in new_menu:
@@ -49,14 +49,19 @@ def refreshValues():
     for choice in new_menu:
         dropMenuAut['menu'].add_command(label=choice, command=tk._setit(chosenAut, choice))
 
+    dropMenuEntCheck['menu'].delete(0, 'end')
+    new_menu = entities_authorities_name_list(False)
+    for choice in new_menu:
+        dropMenuEntCheck['menu'].add_command(label=choice, command=tk._setit(chosenEntCheck, choice))
 
-def choseInputSign():
+
+def choseInputSign(): #method for chosing files from system
     path, filename = filedialog.askopenfilename\
         (title="Select a file", filetypes=[('pdf files', '*.pdf')]).rsplit("/", 1)
     signInputFile.config(text=filename)
 
 
-def signDocument():
+def signDocument(): #method connecting UI and method signing files
     file_name = str(signInputFile.cget("text"))
     ent = chosenEntSign.get()
     apkSignFile(file_name, ent)
@@ -83,7 +88,7 @@ signButton.grid(row=3, column=0, pady=30)
 ################### certificate tab ####################
 
 
-def create_certificate():
+def create_certificate(): #method for creating certificates
     addCertificate(chosenEnt.get(), chosenAut.get())
     messagebox.showinfo("Create Certificate", "Success certificate creation")
 
