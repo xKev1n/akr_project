@@ -111,6 +111,27 @@ def find_sig_in_file(data):
 		return None
 
 
+def getPDFFileSignature(file):
+	with open(file, "rb") as f:
+
+		pdfReader = PdfFileReader(f)
+		metadata = pdfReader.getDocumentInfo()
+		if '/Signature' in metadata:
+			return metadata['/Signature']
+		else:
+			return None
+
+
+def getPDFFileCertificate(file):
+	with open(file, "rb") as f:
+		pdfReader = PdfFileReader(f)
+		metadata = pdfReader.getDocumentInfo()
+		if '/Certificate' in metadata:
+			return metadata['/Certificate']
+		else:
+			return None
+
+
 def VerifySignature(msg, signature, e, n):
 	# RSA verification of the signature
 	# User will send Public Key to Authority to verify it

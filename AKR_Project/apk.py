@@ -5,9 +5,7 @@ from tkinter import ttk
 from tkinter import messagebox
 import main
 from main import apkSignFile, addCertificate
-from authority import Authority
-from entity import Entity
-from functions import does_containt, entities_authorities_name_list, GenerateKeyPair
+from functions import does_containt, entities_authorities_name_list, getPDFFileSignature, getPDFFileCertificate, VerifySignature
 
 
 root = Tk()
@@ -113,39 +111,54 @@ signButton.grid(row=10, column=1, pady=30)
 #################### check tab #########################
 
 
+
+
+
 checkFile = Label(check_tab, text="Path to file", width=50, height=2, borderwidth=1, relief="sunken")
 
 
 def choseInputCheck():
-    checkFileName = filedialog.askopenfilename\
-        (title="Select a file", filetypes=[('pdf files', '*.pdf'),('txt files','*.txt')])
-    checkFile.config(text=checkFileName)
-    checkButton["state"]= NORMAL
+    path, filename = filedialog.askopenfilename \
+        (title="Select a file", filetypes=[('pdf files', '*.pdf'), ('txt files', '*.txt')]).rsplit("/", 1)
+    checkFile.config(text=filename)
 
 
-def choseSignCheck():
-    signEval()
-    if (signEval() != None):
-        #if(signEval().sign["Authority"]==None):
-        #checkAnswer = Label(check_tab,text="Dokument je: \nPodepsán entitou: " + signEval().sign["Entity"] + "\nPodpis: "
-                                    #+ signEval().sign["EntitySign"] + "\nDokument není certifikován žádnou autoritou ",relief="sunken")
-        #elif(signEval().sign["Authority"]!=None):
-        checkAnswer = Label(check_tab,text= "Dokument je: \nPodepsán entitou: "+str(signEval().sign["Entity"])+"\nPodpis: "
-                                                +str(signEval().sign["EntitySign"])+ "\nCertifikován autoritou: "
-                                                +str(signEval().sign["Authority"])+"\nCertifikát: "+str(signEval().sign["Certificate"]),relief="sunken")
-    elif(signEval()== None):
-        checkAnswer = Label(check_tab, text= "Dokument není podepsán!",relief="sunken")
-    checkAnswer.grid(row=2, column=0)
+def signCheck():
+    file_name = str(checkFile.cget("text"))
+    ent = main.entDic[chosenEntCheck.get()]
+    signatue = getPDFFileSignature(file_name)
+    file_certificate = getPDFFileCertificate(file_name)
+    if signatue == None:
+        messagebox.showinfo("Signature Check", "File is not signed")
+    else:
+        if VerifySignature(file_name, signatue, ent.keyPair.e, ent.keyPair.n):
+            if file_certificate == None:
+               messagebox.showinfo("Signature Check", "File has not been changed, but entity hasn't certificate")
+
+            else:
+                messagebox.showinfo("Signature Check", "File has not been changed, and is signed by certificated person,...\n" + file_certificate)
+        else:
+            messagebox.showinfo("Signature Check", "File was not signed by this person or file has been changed")
+
+
+
+entLabel = Label(check_tab, text="Chose Entity:")
+chosenEntCheck = StringVar()
+chosenEntCheck.set(entList[0])
+dropMenuEntCheck = OptionMenu(check_tab, chosenEntCheck, *entList)
 
 
 checkInputButton = Button(check_tab, text="Chose file", command=choseInputCheck, width=20, height=2)
 
-checkButton = Button(check_tab, text="Check sign", command= choseSignCheck,state= DISABLED, width=20, height=2)
+
+checkButton = Button(check_tab, text="Check sign", command=signCheck, width=20, height=2)
 
 
+entLabel.grid(row=1, column=0)
+dropMenuEntCheck.grid(row=1, column=1)
 checkFile.grid(row=0, column=0)
 checkInputButton.grid(row=0, column=1)
-checkButton.grid(row=1, column=1)
+checkButton.grid(row=2, column=0)
 
 
 ####################entity tab #########################
