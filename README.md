@@ -1,2 +1,2 @@
 # akr_project
-Project for cryptography key exchange and certifying to Cryptography
+A project for cryptographic key exchange and crpytographic certification
